@@ -41,6 +41,9 @@ public class PlayerController : MonoBehaviour {
     public float fireRateGatlin;            // 子彈射擊速度
     private float nextFireGatlin = 0.0f;    // 子彈下一次能射擊的時間
 
+    // 雷射武器屬性
+    public GameObject laser;
+
 
     // 武器選擇框
     public Image nowWeaponImage;
@@ -55,6 +58,7 @@ public class PlayerController : MonoBehaviour {
     {
         basic,
         GatlingGun,
+        Laser,
         NumberOfWeapon
 
     }
@@ -123,6 +127,21 @@ public class PlayerController : MonoBehaviour {
                     }
                 }
                 break;
+            case Weapon.Laser:
+                {
+                    
+                    if (Input.GetButton("Fire1"))
+                    {
+                        if (!GameObject.FindGameObjectWithTag("Laser"))
+                        {
+                            Instantiate(laser, shotSpawn.position, shotSpawn.rotation);
+                            
+                        }
+
+                    }
+
+                    break;
+                }
             default:
                 break;
         }
