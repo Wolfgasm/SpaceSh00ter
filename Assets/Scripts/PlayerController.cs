@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 // 自訂類別Boundary
@@ -27,23 +28,28 @@ public class PlayerController : MonoBehaviour {
 
     // 旋轉角度
     public float tilt;
-    
-    // 子彈生成位置
-    public GameObject shot;
-    public Transform shotSpawn;
-    // 機槍子彈生成位置
-    Vector3 shotSpawnGatlin;
 
-    // 基本武器子彈射擊速度
-    public float fireRate;
-    // 加特林機槍子彈射擊速度
-    public float fireRateGatlin;
-    
-    // 基礎武器下一次能射擊的時間
-    private float nextFire = 0.0f;
-    // 機槍下一次能射擊的時間
-    private float nextFireGatlin = 0.0f;
 
+    // 基礎武器屬性
+    public GameObject shot;         // 子彈物體
+    public Transform shotSpawn;     // 子彈生成位置
+    public float fireRate;          // 子彈射擊速度
+    private float nextFire = 0.0f;  // 子彈下一次能射擊的時間
+
+    // 機槍武器屬性
+    Vector3 shotSpawnGatlin;                // 子彈生成位置
+    public float fireRateGatlin;            // 子彈射擊速度
+    private float nextFireGatlin = 0.0f;    // 子彈下一次能射擊的時間
+
+
+    // 武器選擇框
+    public Image nowWeaponImage;
+    public Image nextWeaponImage;
+
+    // 武器圖樣陣列
+    public Sprite[] weaponSprites = new Sprite[2];
+    
+    
     // 武器類別選擇
     enum Weapon
     {
@@ -93,6 +99,9 @@ public class PlayerController : MonoBehaviour {
                         // 播放在玩家物件身上的audio source 也就是槍聲
                         playerAudioSource.Play();
                     }
+
+                    // 切換武器欄位
+
                 }
                 break;
             case Weapon.GatlingGun:
@@ -158,13 +167,29 @@ public class PlayerController : MonoBehaviour {
         {
             // 一般情況下切換到下一個武器
             if ((int)weapon < weaponNumber - 1)
-            {
+            {   
                 weapon += 1;
+
+                // 如果目前的武器已經是最後一把了 將下一把武器的圖樣設為第一把武器的圖樣
+                if ((int)weapon == weaponNumber - 1) nextWeaponImage.sprite = weaponSprites[0];
+                else nextWeaponImage.sprite = weaponSprites[(int)weapon + 1];
+
+
+                // 目前武器的圖樣設為目前武器的圖樣
+                nowWeaponImage.sprite = weaponSprites[(int)weapon];
+                
             }
             // 如果目前武器已經是武器類別的最後一個有效武器 轉為切換到第一種武器
             else if ((int)weapon == weaponNumber - 1)
             {
+                // 目前的武器設為第一把
                 weapon = 0;
+
+                // 下一把武器的圖樣設為第二把武器的圖樣
+                nextWeaponImage.sprite = weaponSprites[1];
+
+                // 目前武器的圖樣設為目前武器的圖樣
+                nowWeaponImage.sprite = weaponSprites[(int)weapon];
             }
         }
     }
