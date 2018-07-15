@@ -74,18 +74,8 @@ public class PlayerController : MonoBehaviour {
 
     void Update()
     {
-        // 切換武器方法
-        if (Input.GetButtonDown("SwitchWeapon"))
-        {
-            if ((int)weapon < weaponNumber - 1)
-            {
-                weapon += 1;
-            }
-            else if((int)weapon == weaponNumber -1)
-            {
-                weapon = 0;
-            }
-        }
+        // 偵測是否切換武器
+        SwitchWeapon();
 
         switch (weapon)
         {
