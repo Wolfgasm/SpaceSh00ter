@@ -10,5 +10,6 @@ public class DestroyByBoundary : MonoBehaviour {
     {
         
         Destroy(other.gameObject);
+        //Debug.Log(other.name);
     }
 }

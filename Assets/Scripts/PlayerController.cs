@@ -44,6 +44,10 @@ public class PlayerController : MonoBehaviour {
     // 雷射武器屬性
     public GameObject laser;
 
+    // 火箭
+    public GameObject missile;
+    public float fireRateMissile;            // 子彈射擊速度
+    private float nextFireMissile = 0.0f;    // 子彈下一次能射擊的時間
 
     // 武器選擇框
     public Image nowWeaponImage;
@@ -59,6 +63,7 @@ public class PlayerController : MonoBehaviour {
         basic,
         GatlingGun,
         Laser,
+        Missile,
         NumberOfWeapon
 
     }
@@ -129,17 +134,34 @@ public class PlayerController : MonoBehaviour {
                 break;
             case Weapon.Laser:
                 {
-                    
+
+
                     if (Input.GetButton("Fire1"))
                     {
-                        if (!GameObject.FindGameObjectWithTag("Laser"))
-                        {
-                            Instantiate(laser, shotSpawn.position, shotSpawn.rotation);
-                            
-                        }
-
+                        Instantiate(laser, shotSpawn.position, shotSpawn.rotation);
                     }
 
+                    break;
+                }
+            case Weapon.Missile:
+                {
+                    {
+                        // 如果按下了Fire1鍵 而且現在的時間已經超過可以發射的時間
+                        if (Input.GetButton("Fire1") && Time.time >= nextFireMissile)
+                        {
+                            // 下一次可以發射的時間往後延一個fireRate
+                            nextFireMissile = Time.time + fireRateMissile;
+
+                            // 建立子彈物件
+                            Instantiate(missile, shotSpawn.position, shotSpawn.rotation);
+
+                            // 播放在玩家物件身上的audio source 也就是槍聲
+                            playerAudioSource.Play();
+                        }
+
+                        // 切換武器欄位
+
+                    }
                     break;
                 }
             default:
@@ -211,5 +233,38 @@ public class PlayerController : MonoBehaviour {
                 nowWeaponImage.sprite = weaponSprites[(int)weapon];
             }
         }
+    }
+
+    // 尋找最近的敵人(物件)方法 距離的比較上都用次方去比 會比起用distance方法較省效能 免得unity背後還要幫開根號
+    Transform GetClosestEnemy(Transform[] enemies)
+    {
+        // 儲存最近的敵人位置
+        Transform bestTarget = null;
+
+        // 儲存最近敵人的距離長度 
+        float closestDistanceSqr = Mathf.Infinity;
+
+        // 計算距離的起始點 這裡是玩家
+        Vector3 currentPosition = transform.position;
+
+        // 逐一計算敵人陣列的每個內容
+        foreach (Transform potentialTarget in enemies)
+        {
+            // 敵人與起始點的位置差
+            Vector3 directionToTarget = potentialTarget.position - currentPosition;
+
+            // 儲存位置差
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+
+            // 比較目前的元素是否是最近的敵人
+            if (dSqrToTarget < closestDistanceSqr)
+            {
+                closestDistanceSqr = dSqrToTarget;
+                bestTarget = potentialTarget;
+            }
+        }
+
+        // 回傳結果
+        return bestTarget;
     }
 }
