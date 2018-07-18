@@ -8,9 +8,16 @@ public class ThunderBehavior : MonoBehaviour {
     public int maximumTarget;
     public GameObject explosion;
 
+    // 開始攻擊敵人前的蓄力時間
     public float startDestroy;
+
+    // 每隔幾秒電一次 
     public float destroyInterval;
-    AudioSource thunderAudioSource;
+
+    // 播放聲音用的AudioSource
+    private AudioSource thunderAudioSource;
+
+    // 電敵人的聲音LUL
     public AudioClip thunderSound;
 
     // 借用該物件的AudioSource 才不會閃電一消失就斷聲音
@@ -20,6 +27,7 @@ public class ThunderBehavior : MonoBehaviour {
 	void Start () {
         theLine = GetComponent<LineRenderer>();
 
+        // 尋找場景中的聲音控制器來替此物件撥放音效
         soundController = GameObject.FindGameObjectWithTag("SoundController");
         if (soundController != null)
         {

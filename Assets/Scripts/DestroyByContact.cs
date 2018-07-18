@@ -38,7 +38,7 @@ public class DestroyByContact : MonoBehaviour {
     {
 
         // 如果與之碰撞的是boundary 回傳null 並且結束此函示
-        if (other.tag == "Boundary")
+        if (other.tag == "Boundary" || other.tag == "Enemies")
         {
             return;
         }
@@ -59,10 +59,11 @@ public class DestroyByContact : MonoBehaviour {
         // 建立爆炸特效
         Instantiate(explosion, transform.position, transform.rotation);
 
-
-        // 摧毀碰到此物件的物體
-        Destroy(other.gameObject);
-
+        if (other.tag != "Laser")
+        {
+            // 摧毀碰到此物件的物體
+            Destroy(other.gameObject);
+        }
         // 摧毀此物件
         Destroy(gameObject);
 

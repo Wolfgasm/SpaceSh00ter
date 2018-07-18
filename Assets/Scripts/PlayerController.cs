@@ -43,6 +43,8 @@ public class PlayerController : MonoBehaviour {
 
     // 雷射武器屬性
     public GameObject laser;
+    private bool laserCreated = false;
+    private GameObject cloneLaser;
 
     // 火箭
     public GameObject missile;
@@ -51,9 +53,9 @@ public class PlayerController : MonoBehaviour {
 
     //連鎖閃電
     public GameObject Thunder;
-    private bool created = false;            //生成閃電後改為true避免連續生成 
-    GameObject cloneThunder;                 //生成閃電同時將此變數值指定為該閃電 用於之後刪除
-
+    private bool thunderCreated = false;            //生成閃電後改為true避免連續生成 
+    private GameObject cloneThunder;                 //生成閃電同時將此變數值指定為該閃電 用於之後刪除
+    
     // 武器選擇框
     public Image nowWeaponImage;
     public Image nextWeaponImage;
@@ -140,12 +142,31 @@ public class PlayerController : MonoBehaviour {
                 break;
             case Weapon.Laser:
                 {
-
-
                     if (Input.GetButton("Fire1"))
                     {
-                        Instantiate(laser, shotSpawn.position, shotSpawn.rotation);
+
+                        if (laserCreated == false)
+                        {
+                            cloneLaser = Instantiate(laser, shotSpawn.position, shotSpawn.rotation);
+                            laserCreated = true;
+                        }
+
                     }
+                    else if (Input.GetButtonUp("Fire1") || this.gameObject == null)
+                    {
+                        laserCreated = false;
+                        if (cloneLaser != null)
+                        {
+                            Destroy(cloneLaser);
+                        }
+
+                    }
+
+                    if (cloneLaser != null)
+                    {
+                        cloneLaser.transform.position = shotSpawn.position - new Vector3(0, 0, 0.5f);
+                    }
+
 
                     break;
                 }
@@ -176,15 +197,15 @@ public class PlayerController : MonoBehaviour {
                     if (Input.GetButton("Fire1") )
                     {
                         
-                        if (created == false)
+                        if (thunderCreated == false)
                         {
                             cloneThunder = Instantiate(Thunder, shotSpawn.position, shotSpawn.rotation);
-                            created = true;
+                            thunderCreated = true;
                         }
                         
                     }
                     else if(Input.GetButtonUp("Fire1") || this.gameObject == null){
-                        created = false;
+                        thunderCreated = false;
                         if (cloneThunder != null)
                         {
                             Destroy(cloneThunder);
@@ -205,12 +226,24 @@ public class PlayerController : MonoBehaviour {
         if (weapon != Weapon.Thunder)
         {
             // 重置生成閃電的布林
-            created = false;
+            thunderCreated = false;
             // 刪除閃電
             if (cloneThunder != null)
             {
                 Destroy(cloneThunder);
             }
+        }
+
+        if (weapon != Weapon.Laser)
+        {
+            laserCreated = false;
+
+            if (cloneLaser != null)
+            {
+                Destroy(cloneLaser);
+
+            }
+
         }
 
 
