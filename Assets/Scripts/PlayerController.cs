@@ -49,6 +49,11 @@ public class PlayerController : MonoBehaviour {
     public float fireRateMissile;            // 子彈射擊速度
     private float nextFireMissile = 0.0f;    // 子彈下一次能射擊的時間
 
+    //連鎖閃電
+    public GameObject Thunder;
+    private bool created = false;            //生成閃電後改為true避免連續生成 
+    GameObject cloneThunder;                 //生成閃電同時將此變數值指定為該閃電 用於之後刪除
+
     // 武器選擇框
     public Image nowWeaponImage;
     public Image nextWeaponImage;
@@ -64,6 +69,7 @@ public class PlayerController : MonoBehaviour {
         GatlingGun,
         Laser,
         Missile,
+        Thunder,
         NumberOfWeapon
 
     }
@@ -152,8 +158,8 @@ public class PlayerController : MonoBehaviour {
                             // 下一次可以發射的時間往後延一個fireRate
                             nextFireMissile = Time.time + fireRateMissile;
 
-                            // 建立子彈物件
-                            Instantiate(missile, shotSpawn.position, shotSpawn.rotation);
+                            // 建立子彈物件 
+                            Instantiate(missile, shotSpawn.position + new Vector3(0,0,0), shotSpawn.rotation);
 
                             // 播放在玩家物件身上的audio source 也就是槍聲
                             playerAudioSource.Play();
@@ -164,8 +170,47 @@ public class PlayerController : MonoBehaviour {
                     }
                     break;
                 }
+
+            case Weapon.Thunder:
+                {
+                    if (Input.GetButton("Fire1") )
+                    {
+                        
+                        if (created == false)
+                        {
+                            cloneThunder = Instantiate(Thunder, shotSpawn.position, shotSpawn.rotation);
+                            created = true;
+                        }
+                        
+                    }
+                    else if(Input.GetButtonUp("Fire1") || this.gameObject == null){
+                        created = false;
+                        if (cloneThunder != null)
+                        {
+                            Destroy(cloneThunder);
+                        }
+                        
+                    }
+
+                    if (cloneThunder != null) {
+                        cloneThunder.transform.position = shotSpawn.position - new Vector3(0,0,0.5f);
+                    }
+
+                    break;
+                }
             default:
                 break;
+        }
+        // 如果武器選擇已經不是閃電
+        if (weapon != Weapon.Thunder)
+        {
+            // 重置生成閃電的布林
+            created = false;
+            // 刪除閃電
+            if (cloneThunder != null)
+            {
+                Destroy(cloneThunder);
+            }
         }
 
 
@@ -235,8 +280,8 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    // 尋找最近的敵人(物件)方法 距離的比較上都用次方去比 會比起用distance方法較省效能 免得unity背後還要幫開根號
-    Transform GetClosestEnemy(Transform[] enemies)
+    // 尋找最近的敵人(物件)方法
+   public Transform GetClosestEnemy(Transform[] enemies)
     {
         // 儲存最近的敵人位置
         Transform bestTarget = null;
