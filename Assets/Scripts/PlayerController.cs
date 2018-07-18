@@ -45,6 +45,8 @@ public class PlayerController : MonoBehaviour {
     public GameObject laser;
     private bool laserCreated = false;
     private GameObject cloneLaser;
+    private LineRenderer laserLine;
+    public GameObject explosionOfLaser;
 
     // 火箭
     public GameObject missile;
@@ -144,11 +146,31 @@ public class PlayerController : MonoBehaviour {
                 {
                     if (Input.GetButton("Fire1"))
                     {
+                        
 
                         if (laserCreated == false)
                         {
                             cloneLaser = Instantiate(laser, shotSpawn.position, shotSpawn.rotation);
+
+                            // 取得子物件的Linerenderer
+                            laserLine = cloneLaser.GetComponentInChildren<LineRenderer>();
+
+
+                            
                             laserCreated = true;
+                        }
+
+                        // 利用設線偵測是否擊中敵人 並將雷射尾端設為設線所碰到的物體
+                        RaycastHit myRaycastHit;
+                        if (Physics.Raycast(transform.position, transform.TransformDirection(transform.forward), out myRaycastHit))
+                        {
+                            laserLine.SetPosition(1, new Vector3(0, 0, myRaycastHit.transform.position.z + 1.5f));
+                            Instantiate(explosionOfLaser, myRaycastHit.transform.position, myRaycastHit.transform.rotation);
+                            Destroy(myRaycastHit.collider.gameObject,0.15f);
+                        }
+                        else {
+
+                            laserLine.SetPosition(1, new Vector3(0, 0, 20));
                         }
 
                     }
@@ -234,7 +256,7 @@ public class PlayerController : MonoBehaviour {
             }
         }
 
-        if (weapon != Weapon.Laser)
+        if (weapon != Weapon.Laser )
         {
             laserCreated = false;
 
