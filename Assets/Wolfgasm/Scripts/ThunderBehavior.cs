@@ -6,11 +6,30 @@ public class ThunderBehavior : MonoBehaviour {
 
     private LineRenderer theLine;
     public int maximumTarget;
+    public GameObject explosion;
+
+    public float startDestroy;
+    public float destroyInterval;
+    AudioSource thunderAudioSource;
+    public AudioClip thunderSound;
+
+    // 借用該物件的AudioSource 才不會閃電一消失就斷聲音
+    private GameObject soundController;
 
 	// Use this for initialization
 	void Start () {
         theLine = GetComponent<LineRenderer>();
-        //StartCoroutine(DestroysStuff());
+
+        soundController = GameObject.FindGameObjectWithTag("SoundController");
+        if (soundController != null)
+        {
+            thunderAudioSource = soundController.GetComponent<AudioSource>();
+        }
+        else {
+            Debug.Log(" 找不到聲音控制器(SoundController)的物件");
+        }
+        
+        StartCoroutine(DestroysStuff());
     }
 	
 	// Update is called once per frame
@@ -109,16 +128,22 @@ public class ThunderBehavior : MonoBehaviour {
 
     IEnumerator DestroysStuff()
     {
-        yield return new WaitForSeconds(0);
+        yield return new WaitForSeconds(startDestroy);
 
         while (true)
         {
             foreach (GameObject stuff in GetNearbyEnemy())
             {
+                thunderAudioSource.clip = thunderSound;
+                thunderAudioSource.Play();
+                
+                Instantiate(explosion, stuff.transform.position, stuff.transform.rotation);
+                
                 Destroy(stuff);
                 Debug.Log("刪除");
             }
-            yield return new WaitForSeconds(5);
+            
+            yield return new WaitForSeconds(destroyInterval);
         }
     }
 
