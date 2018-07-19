@@ -14,14 +14,97 @@ public class Boundary
 
 }
 
+// 基礎武器類別
+[System.Serializable]
+public class BasicWeapon
+{
+    // 基礎武器屬性
+    public GameObject shot;         // 子彈物體
+    public Transform shotSpawn;     // 子彈生成位置
+    public float fireRate;          // 子彈射擊速度
+    private float nextFire = 0.0f;  // 程式用來計算子彈下一次能射擊的時間
 
+    // nextFire的讀寫屬性
+    public float NextFire { get; set; }
+
+
+}
+
+// 機槍武器類別
+[System.Serializable]
+public class GatlinWeapon
+{
+    public float fireRateGatlin;            // 子彈射擊速度
+    private float nextFireGatlin = 0.0f;    // 子彈下一次能射擊的時間
+
+    // nextFireGatlin的讀寫屬性
+    public float NextFireGatlin { get; set; }
+
+
+}
+
+// 雷射武器類別
+[System.Serializable]
+public class LaserWeapon
+{
+    // 雷射武器屬性
+    public GameObject laser;            // 要生成的雷射物件
+    private bool laserCreated = false;  // 是否已經生成雷射物件
+    private GameObject cloneLaser;      // 儲存生成的雷射物件複製品
+    private LineRenderer laserLine;     // 雷射物件的LineRenderer
+    public GameObject explosionOfLaser; // 雷射造成的特效
+
+    public bool LaserCreated { get; set; }
+
+    public GameObject CloneLaser { get; set; }
+
+    public LineRenderer LaserLine { get; set; }
+
+
+
+}
+
+// 火箭武器類別
+[System.Serializable]
+public class MissileWeapon
+{
+    public GameObject missile;
+    public float fireRateMissile;            // 子彈射擊速度
+    private float nextFireMissile = 0.0f;    // 子彈下一次能射擊的時間
+
+    public float NextFireMissile { get; set; }
+
+}
+
+// 閃電武器類別
+[System.Serializable]
+public class ThunderWeapon
+{
+    public GameObject Thunder;
+    private bool thunderCreated = false;            //生成閃電後改為true避免連續生成 
+    private GameObject cloneThunder;                 //生成閃電同時將此變數值指定為該閃電 用於之後刪除
+
+    public bool ThunderCreated { get; set; }
+    public GameObject CloneThunder { get; set; }
+
+}
 public class PlayerController : MonoBehaviour {
 
+    // 自訂類別的參考還是呼叫還是存取 還是?
+    public Boundary boundary;
+    public BasicWeapon basicWeapon;
+    public GatlinWeapon gatlinWeapon;
+    public LaserWeapon laserWeapon;
+    public MissileWeapon missileWeapon;
+    public ThunderWeapon thunderWeapon;
+    
     // 玩家的rigidbody
     Rigidbody playerRigidbody;
-
+    
     // 玩家的Audio Source
-    AudioSource playerAudioSource;
+    AudioSource playerAudioSource;      // 第一個AS元件 用來撥NyanCat音樂
+    AudioSource playerAudioSource2;     // 第二個AS元件 用來處理槍聲
+    AudioSource[] playerAudioSourceS;   // 儲存所有AudioSource元件
 
     // 移動速度
     public float speed;
@@ -29,35 +112,6 @@ public class PlayerController : MonoBehaviour {
     // 旋轉角度
     public float tilt;
 
-
-    // 基礎武器屬性
-    public GameObject shot;         // 子彈物體
-    public Transform shotSpawn;     // 子彈生成位置
-    public float fireRate;          // 子彈射擊速度
-    private float nextFire = 0.0f;  // 子彈下一次能射擊的時間
-
-    // 機槍武器屬性
-    Vector3 shotSpawnGatlin;                // 子彈生成位置
-    public float fireRateGatlin;            // 子彈射擊速度
-    private float nextFireGatlin = 0.0f;    // 子彈下一次能射擊的時間
-
-    // 雷射武器屬性
-    public GameObject laser;
-    private bool laserCreated = false;
-    private GameObject cloneLaser;
-    private LineRenderer laserLine;
-    public GameObject explosionOfLaser;
-
-    // 火箭
-    public GameObject missile;
-    public float fireRateMissile;            // 子彈射擊速度
-    private float nextFireMissile = 0.0f;    // 子彈下一次能射擊的時間
-
-    //連鎖閃電
-    public GameObject Thunder;
-    private bool thunderCreated = false;            //生成閃電後改為true避免連續生成 
-    private GameObject cloneThunder;                 //生成閃電同時將此變數值指定為該閃電 用於之後刪除
-    
     // 武器選擇框
     public Image nowWeaponImage;
     public Image nextWeaponImage;
@@ -66,7 +120,7 @@ public class PlayerController : MonoBehaviour {
     public Sprite[] weaponSprites = new Sprite[2];
     
     
-    // 武器類別選擇
+    // 武器類別列舉
     enum Weapon
     {
         basic,
@@ -80,19 +134,23 @@ public class PlayerController : MonoBehaviour {
     Weapon weapon = new Weapon();
     int weaponNumber = (int)Weapon.NumberOfWeapon; // 取得列舉的大小
 
-    // 自訂類別的參考還是呼叫還是存取 還是?
-    public Boundary boundary;
+
 
 	// Use this for initialization
 	void Start () {
 
         // 取得元件
         playerRigidbody = GetComponent<Rigidbody>();
-        playerAudioSource = GetComponent<AudioSource>();
+
+        // 取得AudioSource元件 因為有兩個所以用陣列
+        playerAudioSourceS = GetComponents<AudioSource>();
+        playerAudioSource = playerAudioSourceS[0];
+        playerAudioSource2 = playerAudioSourceS[1];
+        
 
         // 設定初始武器
         weapon = Weapon.basic;
-        //weapon = Weapon.GatlingGun;
+
 
     }
 
@@ -102,21 +160,22 @@ public class PlayerController : MonoBehaviour {
         // 偵測是否切換武器
         SwitchWeapon();
 
+        // 武器種類
         switch (weapon)
         {
             case Weapon.basic:
                 {
                     // 如果按下了Fire1鍵 而且現在的時間已經超過可以發射的時間
-                    if (Input.GetButton("Fire1") && Time.time >= nextFire)
+                    if (Input.GetButton("Fire1") && Time.time >= basicWeapon.NextFire)
                     {
                         // 下一次可以發射的時間往後延一個fireRate
-                        nextFire = Time.time + fireRate;
+                        basicWeapon.NextFire = Time.time + basicWeapon.fireRate;
 
                         // 建立子彈物件
-                        Instantiate(shot, shotSpawn.position, shotSpawn.rotation);
+                        Instantiate(basicWeapon.shot, basicWeapon.shotSpawn.position, basicWeapon.shotSpawn.rotation);
 
-                        // 播放在玩家物件身上的audio source 也就是槍聲
-                        playerAudioSource.Play();
+                        // 播放槍聲
+                        playerAudioSource2.Play();
                     }
 
                     // 切換武器欄位
@@ -126,19 +185,19 @@ public class PlayerController : MonoBehaviour {
             case Weapon.GatlingGun:
                 {
                     // 如果按下了Fire1鍵 而且現在的時間已經超過可以發射的時間
-                    if (Input.GetButton("Fire1") && Time.time >= nextFireGatlin)
+                    if (Input.GetButton("Fire1") && Time.time >= gatlinWeapon.NextFireGatlin)
                     {
                         // 隨機產生一個子彈發射位置 模擬機槍
-                        shotSpawnGatlin = new Vector3(Random.Range(shotSpawn.position.x - 0.5f, shotSpawn.position.x + 0.5f), shotSpawn.position.y, shotSpawn.position.z);
+                        Vector3 shotSpawnGatlin = new Vector3(Random.Range(basicWeapon.shotSpawn.position.x - 0.5f, basicWeapon.shotSpawn.position.x + 0.5f), basicWeapon.shotSpawn.position.y, basicWeapon.shotSpawn.position.z);
 
                         // 下一次可以發射的時間往後延一個fireRate
-                        nextFireGatlin = Time.time + fireRateGatlin;
+                        gatlinWeapon.NextFireGatlin = Time.time + gatlinWeapon.fireRateGatlin;
 
                         // 建立子彈物件
-                        Instantiate(shot,shotSpawnGatlin , shotSpawn.rotation);
+                        Instantiate(basicWeapon.shot, shotSpawnGatlin , basicWeapon.shotSpawn.rotation);
 
-                        // 播放在玩家物件身上的audio source 也就是槍聲
-                        playerAudioSource.Play();
+                        // 播放槍聲
+                        playerAudioSource2.Play();
                     }
                 }
                 break;
@@ -147,46 +206,91 @@ public class PlayerController : MonoBehaviour {
                     if (Input.GetButton("Fire1"))
                     {
                         
-
-                        if (laserCreated == false)
+                        // 用laserCreated變數避免重複生成雷射
+                        if (laserWeapon.LaserCreated == false)
                         {
-                            cloneLaser = Instantiate(laser, shotSpawn.position, shotSpawn.rotation);
+                            // 生成雷射
+                            laserWeapon.CloneLaser = Instantiate(laserWeapon.laser, basicWeapon.shotSpawn.position, basicWeapon.shotSpawn.rotation);
 
                             // 取得子物件的Linerenderer
-                            laserLine = cloneLaser.GetComponentInChildren<LineRenderer>();
+                            laserWeapon.LaserLine = laserWeapon.CloneLaser.GetComponentInChildren<LineRenderer>();
 
-
+                            // 重置設線起始寬度
+                            laserWeapon.LaserLine.startWidth = 0;
                             
-                            laserCreated = true;
+
+                            // 如果還沒有撥過這個音樂
+                            if (playerAudioSource.isPlaying == false)
+                            {
+                                // 撥放nyanCat音樂
+                                playerAudioSource.Play();
+                            }
+                            else // 如果已經撥過
+                            {
+                                // 取消暫停
+                                playerAudioSource.UnPause();
+                            }
+
+                            // 避免重複執行
+                            laserWeapon.LaserCreated = true;
                         }
 
-                        // 利用設線偵測是否擊中敵人 並將雷射尾端設為設線所碰到的物體
+                        // 讓射線寬度逐漸增加
+                        if (laserWeapon.LaserLine.startWidth < 0.3)
+                        {
+                            laserWeapon.LaserLine.startWidth += 0.005f;
+                            
+                        }
+                        else if (laserWeapon.LaserLine.startWidth < 1.2f)
+                        {
+                            laserWeapon.LaserLine.startWidth += 0.16f;
+                            
+                        }
+
+                        // 用來儲存射線碰到的物體的資訊
                         RaycastHit myRaycastHit;
+
+                        // 利用設線偵測是否擊中敵人 
+                        // 如果有擊中
                         if (Physics.Raycast(transform.position, transform.TransformDirection(transform.forward), out myRaycastHit))
                         {
-                            laserLine.SetPosition(1, new Vector3(0, 0, myRaycastHit.transform.position.z + 1.5f));
-                            Instantiate(explosionOfLaser, myRaycastHit.transform.position, myRaycastHit.transform.rotation);
-                            Destroy(myRaycastHit.collider.gameObject,0.15f);
-                        }
-                        else {
+                            // 將雷射尾端設為設線所碰到的物體
+                            laserWeapon.LaserLine.SetPosition(1, new Vector3(0, 0, myRaycastHit.transform.position.z + 2.5f));
 
-                            laserLine.SetPosition(1, new Vector3(0, 0, 20));
+                            // 生成擊中特效
+                            Instantiate(laserWeapon.explosionOfLaser, myRaycastHit.transform.position, laserWeapon.explosionOfLaser.transform.rotation);
+
+                            // 短暫秒數後刪除射線擊中的目標
+                            Destroy(myRaycastHit.collider.gameObject,0.07f);
+                        }
+                        // 如果沒有擊中
+                        else {
+                            // 射線長度設為固定值
+                            laserWeapon.LaserLine.SetPosition(1, new Vector3(0, 0, 20));
                         }
 
                     }
+
+                    // 如果不再按壓發射鍵 或者玩家已經消失
                     else if (Input.GetButtonUp("Fire1") || this.gameObject == null)
                     {
-                        laserCreated = false;
-                        if (cloneLaser != null)
+                        // 重置射線的生成狀態
+                        laserWeapon.LaserCreated = false;
+
+                        // 刪除剛才建立的射線物件
+                        if (laserWeapon.CloneLaser != null)
                         {
-                            Destroy(cloneLaser);
+                            Destroy(laserWeapon.CloneLaser);
                         }
 
+                        // 暫停nyanCat音樂
+                        playerAudioSource.Pause();
                     }
 
-                    if (cloneLaser != null)
+                    // 如果射線的母物件存在 將他的座標設定為玩家的槍口位置
+                    if (laserWeapon.CloneLaser != null)
                     {
-                        cloneLaser.transform.position = shotSpawn.position - new Vector3(0, 0, 0.5f);
+                        laserWeapon.CloneLaser.transform.position = basicWeapon.shotSpawn.position - new Vector3(0, 0, 0.5f);
                     }
 
 
@@ -196,16 +300,16 @@ public class PlayerController : MonoBehaviour {
                 {
                     {
                         // 如果按下了Fire1鍵 而且現在的時間已經超過可以發射的時間
-                        if (Input.GetButton("Fire1") && Time.time >= nextFireMissile)
+                        if (Input.GetButton("Fire1") && Time.time >= missileWeapon.NextFireMissile)
                         {
                             // 下一次可以發射的時間往後延一個fireRate
-                            nextFireMissile = Time.time + fireRateMissile;
+                            missileWeapon.NextFireMissile = Time.time + missileWeapon.fireRateMissile;
 
                             // 建立子彈物件 
-                            Instantiate(missile, shotSpawn.position + new Vector3(0,0,0), shotSpawn.rotation);
+                            Instantiate(missileWeapon.missile, basicWeapon.shotSpawn.position + new Vector3(0,0,0), basicWeapon.shotSpawn.rotation);
 
                             // 播放在玩家物件身上的audio source 也就是槍聲
-                            playerAudioSource.Play();
+                            playerAudioSource2.Play();
                         }
 
                         // 切換武器欄位
@@ -219,24 +323,24 @@ public class PlayerController : MonoBehaviour {
                     if (Input.GetButton("Fire1") )
                     {
                         
-                        if (thunderCreated == false)
+                        if (thunderWeapon.ThunderCreated == false)
                         {
-                            cloneThunder = Instantiate(Thunder, shotSpawn.position, shotSpawn.rotation);
-                            thunderCreated = true;
+                            thunderWeapon.CloneThunder = Instantiate(thunderWeapon.Thunder, basicWeapon.shotSpawn.position, basicWeapon.shotSpawn.rotation);
+                            thunderWeapon.ThunderCreated = true;
                         }
                         
                     }
                     else if(Input.GetButtonUp("Fire1") || this.gameObject == null){
-                        thunderCreated = false;
-                        if (cloneThunder != null)
+                        thunderWeapon.ThunderCreated = false;
+                        if (thunderWeapon.CloneThunder != null)
                         {
-                            Destroy(cloneThunder);
+                            Destroy(thunderWeapon.CloneThunder);
                         }
                         
                     }
 
-                    if (cloneThunder != null) {
-                        cloneThunder.transform.position = shotSpawn.position - new Vector3(0,0,0.5f);
+                    if (thunderWeapon.CloneThunder != null) {
+                        thunderWeapon.CloneThunder.transform.position = basicWeapon.shotSpawn.position - new Vector3(0,0,0.5f);
                     }
 
                     break;
@@ -248,23 +352,25 @@ public class PlayerController : MonoBehaviour {
         if (weapon != Weapon.Thunder)
         {
             // 重置生成閃電的布林
-            thunderCreated = false;
+            thunderWeapon.ThunderCreated = false;
             // 刪除閃電
-            if (cloneThunder != null)
+            if (thunderWeapon.CloneThunder != null)
             {
-                Destroy(cloneThunder);
+                Destroy(thunderWeapon.CloneThunder);
             }
         }
-
+        // 如果武器選擇已經不是雷射
         if (weapon != Weapon.Laser )
         {
-            laserCreated = false;
+            laserWeapon.LaserCreated = false;
 
-            if (cloneLaser != null)
+            if (laserWeapon.CloneLaser != null)
             {
-                Destroy(cloneLaser);
+                Destroy(laserWeapon.CloneLaser);
 
             }
+            // 暫停nyanCat音樂
+            playerAudioSource.Stop();
 
         }
 
@@ -272,7 +378,7 @@ public class PlayerController : MonoBehaviour {
     }
 
 
-	// Update is called once per frame
+	// 玩家動作
 	void FixedUpdate ()
     {
         float moveHorizontal = Input.GetAxis("Horizontal");

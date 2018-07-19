@@ -23,6 +23,9 @@ public class ThunderBehavior : MonoBehaviour {
     // 借用該物件的AudioSource 才不會閃電一消失就斷聲音
     private GameObject soundController;
 
+    // 利用自身的AudioSource撥BUZZ聲音
+    private AudioSource selfAudioSource;
+
 	// Use this for initialization
 	void Start () {
         theLine = GetComponent<LineRenderer>();
@@ -36,7 +39,11 @@ public class ThunderBehavior : MonoBehaviour {
         else {
             Debug.Log(" 找不到聲音控制器(SoundController)的物件");
         }
+
+        // 尋找自身的AudioSource
+        selfAudioSource = GetComponent<AudioSource>();
         
+
         StartCoroutine(DestroysStuff());
     }
 	
@@ -142,8 +149,11 @@ public class ThunderBehavior : MonoBehaviour {
         {
             foreach (GameObject stuff in GetNearbyEnemy())
             {
+                /*
                 thunderAudioSource.clip = thunderSound;
-                thunderAudioSource.Play();
+                thunderAudioSource.Play();*/
+
+                thunderAudioSource.PlayOneShot(thunderSound,0.3f);
                 
                 Instantiate(explosion, stuff.transform.position, stuff.transform.rotation);
                 
