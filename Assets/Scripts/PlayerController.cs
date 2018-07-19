@@ -54,11 +54,14 @@ public class LaserWeapon
     private LineRenderer laserLine;     // 雷射物件的LineRenderer
     public GameObject explosionOfLaser; // 雷射造成的特效
 
+
     public bool LaserCreated { get; set; }
 
     public GameObject CloneLaser { get; set; }
 
     public LineRenderer LaserLine { get; set; }
+
+
 
 
 
@@ -88,6 +91,7 @@ public class ThunderWeapon
     public GameObject CloneThunder { get; set; }
 
 }
+
 public class PlayerController : MonoBehaviour {
 
     // 自訂類別的參考還是呼叫還是存取 還是?
@@ -105,6 +109,7 @@ public class PlayerController : MonoBehaviour {
     AudioSource playerAudioSource;      // 第一個AS元件 用來撥NyanCat音樂
     AudioSource playerAudioSource2;     // 第二個AS元件 用來處理槍聲
     AudioSource[] playerAudioSourceS;   // 儲存所有AudioSource元件
+
 
     // 移動速度
     public float speed;
@@ -205,10 +210,13 @@ public class PlayerController : MonoBehaviour {
                 {
                     if (Input.GetButton("Fire1"))
                     {
-                        
+                       
+
                         // 用laserCreated變數避免重複生成雷射
                         if (laserWeapon.LaserCreated == false)
                         {
+                            
+
                             // 生成雷射
                             laserWeapon.CloneLaser = Instantiate(laserWeapon.laser, basicWeapon.shotSpawn.position, basicWeapon.shotSpawn.rotation);
 
@@ -249,24 +257,29 @@ public class PlayerController : MonoBehaviour {
 
                         // 用來儲存射線碰到的物體的資訊
                         RaycastHit myRaycastHit;
+                        
 
                         // 利用設線偵測是否擊中敵人 
                         // 如果有擊中
                         if (Physics.Raycast(transform.position, transform.TransformDirection(transform.forward), out myRaycastHit))
                         {
+                            
                             // 將雷射尾端設為設線所碰到的物體
                             laserWeapon.LaserLine.SetPosition(1, new Vector3(0, 0, myRaycastHit.transform.position.z + 2.5f));
 
+                            
                             // 生成擊中特效
-                            Instantiate(laserWeapon.explosionOfLaser, myRaycastHit.transform.position, laserWeapon.explosionOfLaser.transform.rotation);
+                            Instantiate(laserWeapon.explosionOfLaser, new Vector3(transform.position.x, 0, myRaycastHit.transform.position.z ), laserWeapon.explosionOfLaser.transform.rotation);
 
-                            // 短暫秒數後刪除射線擊中的目標
-                            Destroy(myRaycastHit.collider.gameObject,0.07f);
+                            if(myRaycastHit.collider.tag != "Boundary")
+                            Destroy(myRaycastHit.collider.gameObject,0.07f);// 0.07秒可以造成五次傷害
+                            
                         }
                         // 如果沒有擊中
                         else {
                             // 射線長度設為固定值
-                            laserWeapon.LaserLine.SetPosition(1, new Vector3(0, 0, 20));
+                            laserWeapon.LaserLine.SetPosition(1, new Vector3(0, 0, 100));
+
                         }
 
                     }
@@ -473,4 +486,6 @@ public class PlayerController : MonoBehaviour {
         // 回傳結果
         return bestTarget;
     }
+
+
 }
