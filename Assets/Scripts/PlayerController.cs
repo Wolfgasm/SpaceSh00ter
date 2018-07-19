@@ -53,7 +53,8 @@ public class LaserWeapon
     private GameObject cloneLaser;      // 儲存生成的雷射物件複製品
     private LineRenderer laserLine;     // 雷射物件的LineRenderer
     public GameObject explosionOfLaser; // 雷射造成的特效
-
+    public float laserInterval;
+    private float nextLaserInterval;
 
     public bool LaserCreated { get; set; }
 
@@ -61,6 +62,7 @@ public class LaserWeapon
 
     public LineRenderer LaserLine { get; set; }
 
+    public float NextLaserInterval { get; set; }
 
 
 
@@ -264,16 +266,22 @@ public class PlayerController : MonoBehaviour {
                         if (Physics.Raycast(transform.position, transform.TransformDirection(transform.forward), out myRaycastHit))
                         {
                             
+                            // 限制雷射傷害速度
+                            if (laserWeapon.NextLaserInterval <= Time.time)
+                            {
+                                laserWeapon.NextLaserInterval = Time.time + laserWeapon.laserInterval;
+
+                                // 生成擊中特效
+                                Instantiate(laserWeapon.explosionOfLaser, new Vector3(transform.position.x, 0, myRaycastHit.transform.position.z), laserWeapon.explosionOfLaser.transform.rotation);
+
+                                // 刪除被擊中的物件
+                                if (myRaycastHit.collider.tag != "Boundary")
+                                    Destroy(myRaycastHit.collider.gameObject,0.07f);
+                            }
+
                             // 將雷射尾端設為設線所碰到的物體
                             laserWeapon.LaserLine.SetPosition(1, new Vector3(0, 0, myRaycastHit.transform.position.z + 2.5f));
 
-                            
-                            // 生成擊中特效
-                            Instantiate(laserWeapon.explosionOfLaser, new Vector3(transform.position.x, 0, myRaycastHit.transform.position.z ), laserWeapon.explosionOfLaser.transform.rotation);
-
-                            if(myRaycastHit.collider.tag != "Boundary")
-                            Destroy(myRaycastHit.collider.gameObject,0.07f);// 0.07秒可以造成五次傷害
-                            
                         }
                         // 如果沒有擊中
                         else {
