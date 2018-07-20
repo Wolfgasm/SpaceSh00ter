@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 public class MainGameController : MonoBehaviour {
 
     // 隕石物件參考
-    public GameObject hazard;
+    public GameObject[] hazards;
 
     // 設定生成位置
     public Vector3 spawnValue;
@@ -86,8 +86,10 @@ public class MainGameController : MonoBehaviour {
                 // 宣告一個"沒有旋轉"的旋轉參數
                 Quaternion spawnRotation = Quaternion.identity;
 
+                int random = Random.Range(0, hazards.Length);
+
                 // 生成隕石
-                Instantiate(hazard, spawnPos, spawnRotation);
+                Instantiate(hazards[random], spawnPos, spawnRotation);
 
                 // 迴圈跑一次會在這邊暫停一個短暫秒數 所以就不會一次生成一整排的隕石
                 yield return new WaitForSeconds(spawnWait);

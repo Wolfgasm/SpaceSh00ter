@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class DestroyByContact : MonoBehaviour {
 
+    // 傷害
+    public int health;
+
     // 要產生的爆炸特效
     public GameObject explosion;
     public GameObject playerExplosion;
@@ -36,7 +39,12 @@ public class DestroyByContact : MonoBehaviour {
     // 當他被任何物體碰到的時候
     void OnTriggerEnter(Collider other)
     {
+        
 
+
+
+
+        /*
         // 如果與之碰撞的是boundary 回傳null 並且結束此函示
         if (other.tag == "Boundary" || other.tag == "Enemies")
         {
@@ -65,7 +73,7 @@ public class DestroyByContact : MonoBehaviour {
             Destroy(other.gameObject);
         }
         // 摧毀此物件
-        Destroy(gameObject);
+        Destroy(gameObject);*/
 
 
     }

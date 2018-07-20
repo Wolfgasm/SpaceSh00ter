@@ -18,6 +18,7 @@ public class Boundary
 [System.Serializable]
 public class BasicWeapon
 {
+    
     // 基礎武器屬性
     public GameObject shot;         // 子彈物體
     public Transform shotSpawn;     // 子彈生成位置
@@ -36,7 +37,6 @@ public class GatlinWeapon
 {
     public float fireRateGatlin;            // 子彈射擊速度
     private float nextFireGatlin = 0.0f;    // 子彈下一次能射擊的時間
-
     // nextFireGatlin的讀寫屬性
     public float NextFireGatlin { get; set; }
 
@@ -53,8 +53,11 @@ public class LaserWeapon
     private GameObject cloneLaser;      // 儲存生成的雷射物件複製品
     private LineRenderer laserLine;     // 雷射物件的LineRenderer
     public GameObject explosionOfLaser; // 雷射造成的特效
-    public float laserInterval;
-    private float nextLaserInterval;
+    public GameObject explosionOfLaser02;
+    public float laserInterval;         // 雷射輸出頻率
+    private float nextLaserInterval;    // 控制雷射輸出頻率用的變數
+    public int damage;
+
 
     public bool LaserCreated { get; set; }
 
@@ -76,7 +79,6 @@ public class MissileWeapon
     public GameObject missile;
     public float fireRateMissile;            // 子彈射擊速度
     private float nextFireMissile = 0.0f;    // 子彈下一次能射擊的時間
-
     public float NextFireMissile { get; set; }
 
 }
@@ -269,14 +271,16 @@ public class PlayerController : MonoBehaviour {
                             // 限制雷射傷害速度
                             if (laserWeapon.NextLaserInterval <= Time.time)
                             {
+                                DestroyAble destroyable = myRaycastHit.collider.gameObject.GetComponent<DestroyAble>();
+
                                 laserWeapon.NextLaserInterval = Time.time + laserWeapon.laserInterval;
 
                                 // 生成擊中特效
-                                Instantiate(laserWeapon.explosionOfLaser, new Vector3(transform.position.x, 0, myRaycastHit.transform.position.z), laserWeapon.explosionOfLaser.transform.rotation);
+                                Instantiate(laserWeapon.explosionOfLaser, new Vector3(transform.position.x, -6, myRaycastHit.transform.position.z), laserWeapon.explosionOfLaser.transform.rotation);
+                                Instantiate(laserWeapon.explosionOfLaser02, new Vector3(transform.position.x, 0, myRaycastHit.transform.position.z), laserWeapon.explosionOfLaser02.transform.rotation);
 
-                                // 刪除被擊中的物件
-                                if (myRaycastHit.collider.tag != "Boundary")
-                                    Destroy(myRaycastHit.collider.gameObject,0.07f);
+                                destroyable.health -= laserWeapon.damage;
+                                
                             }
 
                             // 將雷射尾端設為設線所碰到的物體
