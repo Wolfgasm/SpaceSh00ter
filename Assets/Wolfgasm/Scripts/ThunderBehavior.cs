@@ -8,11 +8,16 @@ public class ThunderBehavior : MonoBehaviour {
     public int maximumTarget;
     public GameObject explosion;
 
+    // 每電一次的傷害
+    public int damage;
+
     // 開始攻擊敵人前的蓄力時間
-    public float startDestroy;
+    public float startDamageWait;
 
     // 每隔幾秒電一次 
-    public float destroyInterval;
+    public float damageInterval;
+
+
 
     // 播放聲音用的AudioSource
     private AudioSource thunderAudioSource;
@@ -143,25 +148,30 @@ public class ThunderBehavior : MonoBehaviour {
 
     IEnumerator DestroysStuff()
     {
-        yield return new WaitForSeconds(startDestroy);
+        // 開始造成傷害前先等一下
+        yield return new WaitForSeconds(startDamageWait);
 
         while (true)
         {
+            // 對目前連線的所有敵人做處理
             foreach (GameObject stuff in GetNearbyEnemy())
             {
-                /*
-                thunderAudioSource.clip = thunderSound;
-                thunderAudioSource.Play();*/
+                // 先取得他們的HP
+                DestroyAble destroyAble = stuff.GetComponent<DestroyAble>();
 
+                // 播放電擊聲音
                 thunderAudioSource.PlayOneShot(thunderSound,0.3f);
                 
+                // 產生特效
                 Instantiate(explosion, stuff.transform.position, stuff.transform.rotation);
+
+                // 扣血
+                destroyAble.health -= damage;
                 
-                Destroy(stuff);
-                Debug.Log("刪除");
             }
             
-            yield return new WaitForSeconds(destroyInterval);
+            // 每波傷害之間的間隔
+            yield return new WaitForSeconds(damageInterval);
         }
     }
 

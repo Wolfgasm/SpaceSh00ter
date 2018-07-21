@@ -108,12 +108,17 @@ public class PlayerController : MonoBehaviour {
     
     // 玩家的rigidbody
     Rigidbody playerRigidbody;
+
+    // 玩家的destroyable
+    DestroyAble playerDestroyAble;
     
     // 玩家的Audio Source
     AudioSource playerAudioSource;      // 第一個AS元件 用來撥NyanCat音樂
     AudioSource playerAudioSource2;     // 第二個AS元件 用來處理槍聲
     AudioSource[] playerAudioSourceS;   // 儲存所有AudioSource元件
 
+    //
+    DestroyAble destroyable;
 
     // 移動速度
     public float speed;
@@ -150,6 +155,7 @@ public class PlayerController : MonoBehaviour {
 
         // 取得元件
         playerRigidbody = GetComponent<Rigidbody>();
+        playerDestroyAble = GetComponent<DestroyAble>();
 
         // 取得AudioSource元件 因為有兩個所以用陣列
         playerAudioSourceS = GetComponents<AudioSource>();
@@ -168,6 +174,9 @@ public class PlayerController : MonoBehaviour {
     {
         // 偵測是否切換武器
         SwitchWeapon();
+
+
+
 
         // 武器種類
         switch (weapon)
@@ -271,7 +280,8 @@ public class PlayerController : MonoBehaviour {
                             // 限制雷射傷害速度
                             if (laserWeapon.NextLaserInterval <= Time.time)
                             {
-                                DestroyAble destroyable = myRaycastHit.collider.gameObject.GetComponent<DestroyAble>();
+                                destroyable = myRaycastHit.collider.gameObject.GetComponent<DestroyAble>();
+                                destroyable.health -= laserWeapon.damage;
 
                                 laserWeapon.NextLaserInterval = Time.time + laserWeapon.laserInterval;
 
@@ -279,7 +289,7 @@ public class PlayerController : MonoBehaviour {
                                 Instantiate(laserWeapon.explosionOfLaser, new Vector3(transform.position.x, -6, myRaycastHit.transform.position.z), laserWeapon.explosionOfLaser.transform.rotation);
                                 Instantiate(laserWeapon.explosionOfLaser02, new Vector3(transform.position.x, 0, myRaycastHit.transform.position.z), laserWeapon.explosionOfLaser02.transform.rotation);
 
-                                destroyable.health -= laserWeapon.damage;
+                                
                                 
                             }
 
@@ -297,7 +307,7 @@ public class PlayerController : MonoBehaviour {
                     }
 
                     // 如果不再按壓發射鍵 或者玩家已經消失
-                    else if (Input.GetButtonUp("Fire1") || this.gameObject == null)
+                    else if (Input.GetButtonUp("Fire1"))
                     {
                         // 重置射線的生成狀態
                         laserWeapon.LaserCreated = false;
@@ -374,7 +384,7 @@ public class PlayerController : MonoBehaviour {
                 break;
         }
         // 如果武器選擇已經不是閃電
-        if (weapon != Weapon.Thunder)
+        if (weapon != Weapon.Thunder || playerDestroyAble.health <=0)
         {
             // 重置生成閃電的布林
             thunderWeapon.ThunderCreated = false;
@@ -385,7 +395,7 @@ public class PlayerController : MonoBehaviour {
             }
         }
         // 如果武器選擇已經不是雷射
-        if (weapon != Weapon.Laser )
+        if (weapon != Weapon.Laser || playerDestroyAble.health <= 0)
         {
             laserWeapon.LaserCreated = false;
 

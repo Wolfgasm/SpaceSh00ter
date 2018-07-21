@@ -66,6 +66,7 @@ public class MainGameController : MonoBehaviour {
 
             SceneManager.LoadScene(0);
         }
+        SlowMotion();
     }
 
     // 生成隕石的自訂方法
@@ -129,5 +130,23 @@ public class MainGameController : MonoBehaviour {
     {
         gameoverText.text = "Game Over";
         gameover = true;
+    }
+
+    public void SlowMotion()
+    {
+        if (Input.GetButton("fun"))
+        {
+            if (Time.timeScale == 1.0f)
+            {
+                Time.timeScale = 0.5f;
+                Time.fixedDeltaTime = 0.5f;
+            }
+                
+        }
+        else {
+            Time.timeScale = 1.0f;
+            Time.fixedDeltaTime = 1.0f;
+        }
+        Time.fixedDeltaTime = 0.02F * Time.timeScale;
     }
 }
