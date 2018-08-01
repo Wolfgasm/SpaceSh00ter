@@ -54,7 +54,7 @@ public class MissileMovement : MonoBehaviour {
             // 計算自身向量與敵人位置向量的外積
             Vector3 rotate = Vector3.Cross(direction, transform.forward);
 
-            // 將角向量指定為向量外積的負數(否則會往反方向轉)
+            // 將角向量指定為向量外積的"負數"(否則會往反方向轉)
             missileRigidbody.angularVelocity = -rotate * homingSpeed;
 
             // 給予該鋼體一個持續往前(local z軸)的速度
@@ -115,7 +115,7 @@ public class MissileMovement : MonoBehaviour {
         if (player != null)
         {
             // 計算距離的原點設為玩家
-            currentPosition = player.transform.position;
+            currentPosition = transform.position;
         }
         // 否則
         else {

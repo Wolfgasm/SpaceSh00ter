@@ -66,6 +66,9 @@ public class MainGameController : MonoBehaviour {
 
             SceneManager.LoadScene(0);
         }
+        
+
+
         SlowMotion();
     }
 

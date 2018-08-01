@@ -276,11 +276,11 @@ public class PlayerController : MonoBehaviour {
                         // 如果有擊中
                         if (Physics.Raycast(transform.position, transform.TransformDirection(transform.forward), out myRaycastHit))
                         {
-                            
+                            destroyable = myRaycastHit.collider.gameObject.GetComponent<DestroyAble>();
                             // 限制雷射傷害速度
                             if (laserWeapon.NextLaserInterval <= Time.time)
                             {
-                                destroyable = myRaycastHit.collider.gameObject.GetComponent<DestroyAble>();
+                                
                                 destroyable.health -= laserWeapon.damage;
 
                                 laserWeapon.NextLaserInterval = Time.time + laserWeapon.laserInterval;
